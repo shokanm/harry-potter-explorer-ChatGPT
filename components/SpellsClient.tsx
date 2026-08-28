@@ -1,0 +1,4 @@
+"use client";
+import { useEffect, useState } from "react";
+import { Spell } from "@/types/hp";
+export default function SpellsClient(){const [q,setQ]=useState("");const [items,setItems]=useState<Spell[]>([]);const [loading,setLoading]=useState(true);useEffect(()=>{const t=setTimeout(async()=>{setLoading(true);try{const r=await fetch(`/api/spells?q=${encodeURIComponent(q)}`);const d=await r.json();setItems(d.items||[])}finally{setLoading(false)}},220);return()=>clearTimeout(t)},[q]);return <><div className="toolbar"><input className="search" placeholder="Search spells and effects..." value={q} onChange={e=>setQ(e.target.value)}/></div>{loading?<div className="state">Opening the spellbook…</div>:<div className="grid-3">{items.map(s=><article className="card spell" key={s.id}><div className="tag">Spell</div><h3>{s.name}</h3><p className="muted">{s.description}</p></article>)}</div>}</>}

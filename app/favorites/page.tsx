@@ -1,0 +1,2 @@
+import FavoritesClient from "@/components/FavoritesClient";
+export default function Favorites(){return <main className="section"><div className="container"><div className="eyebrow">Your collection</div><h2>Favorites</h2><p className="lead" style={{marginLeft:0}}>Your saved characters stay on this device using localStorage — no account required.</p><div style={{marginTop:28}}><FavoritesClient/></div></div></main>}

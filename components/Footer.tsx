@@ -1,0 +1,1 @@
+export default function Footer(){ return <footer className="footer"><div className="container">Unofficial fan-made educational project created for a programming competition. Not affiliated with J.K. Rowling, Warner Bros. or the Harry Potter franchise.</div></footer> }
