@@ -1,28 +1,27 @@
 # Harry Potter Explorer
 
-A full-stack, competition-ready Harry Potter universe explorer built for the nFactorial AI Engineering scholarship challenge. Users can discover Hogwarts houses, search and paginate characters, inspect detailed profiles, browse spells, save favorites locally, view live popularity stats, and chat with fictional characters through an optional LLM integration.
+A full-stack Harry Potter universe explorer built for the **nFactorial AI Engineering scholarship challenge**. Users can explore Hogwarts houses, search and paginate characters, inspect detailed profiles, browse spells and magical artifacts, save favorites, see live popularity data, and chat with fictional characters through Gemini AI.
 
 > **Disclaimer:** This is an unofficial fan-made educational project. It is not affiliated with J.K. Rowling, Warner Bros., or the Harry Potter franchise.
 
-## Demo
+## Live demo
 
-Deploy the project to Vercel (recommended) and place the public URL here:
-
-`https://YOUR-PROJECT.vercel.app`
+**Production:** https://harry-potter-explorer-chatgpt-gn9p4eeqr-shokan.vercel.app  
+**GitHub:** https://github.com/shokanm/harry-potter-explorer-ChatGPT
 
 ## Requirements coverage
 
 ### Level 1 — Basic interface
 
-- Atmospheric home page with navigation
-- Dedicated Hogwarts Houses page
+- Atmospheric Hogwarts-inspired home page with navigation
+- Dedicated Houses page
 - Gryffindor, Slytherin, Ravenclaw and Hufflepuff cards
 - House colors, symbolism, traits and descriptions
 
 ### Level 2 — Dynamic data and search
 
 - Character data from the Harry Potter API
-- **External HP API is called only from the server**
+- **All Harry Potter API requests are made server-side**
 - Character image, name, house and patronus
 - Search by character name
 - House filtering
@@ -31,72 +30,86 @@ Deploy the project to Vercel (recommended) and place the public URL here:
 
 ### Level 3 — Public access
 
-- Optimized for deployment on Vercel
-- Production build script included
+- Public GitHub repository
+- Production deployment on Vercel
+- Production build support with `npm run build`
 
-### Bonus
+### Bonus features
 
-- Character detail page with DOB, species, ancestry, wand, patronus, actor, status and Hogwarts role
+- Character detail page with date of birth, species, ancestry, wand, patronus, actor and Hogwarts role
 - Favorites persisted in `localStorage`
-- Optional Supabase/PostgreSQL character-view leaderboard
-- Optional OpenAI-compatible LLM character chat
-- Graceful fallback when database or LLM secrets are not configured
+- Supabase/PostgreSQL-backed character popularity statistics
+- Atomic database increments through a PostgreSQL RPC
+- Near-real-time leaderboard refresh every 8 seconds through `/api/views`
+- AI character chat powered by **Google Gemini 3.6 Flash**
+- Magical artifacts explorer
+- Graceful fallback when optional database or AI secrets are not configured
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    B[Browser] -->|/api/characters /api/spells| N[Next.js server]
+    B[Browser] -->|/api/characters| N[Next.js Server]
+    B -->|/api/spells| N
     B -->|/api/chat| N
     B -->|/api/views| N
+
     N --> H[Harry Potter API]
-    N --> L[LLM Provider]
-    N --> S[(Supabase/PostgreSQL)]
+    N --> G[Google Gemini API]
+    N --> S[(Supabase / PostgreSQL)]
+
     B --> LS[(localStorage Favorites)]
 ```
 
-The browser never calls the HP API, the LLM provider, or Supabase directly. All external services are behind application-owned server endpoints.
+The browser never calls the Harry Potter API, Gemini API, or Supabase directly. Every external service is accessed through application-owned Next.js route handlers. This directly satisfies the challenge requirement that **external APIs and services must be called from the server side**.
 
 ## Tech stack
 
-- **Next.js + App Router** — frontend and backend in one deployable project. Route Handlers are a natural way to enforce the contest requirement that external services must be called from the server.
-- **React + TypeScript** — typed models improve safety when dealing with inconsistent third-party API data.
-- **Plain CSS design system** — keeps the project lightweight while still allowing a bespoke Hogwarts-inspired interface instead of a generic component-library look.
-- **Lucide React** — small, consistent icon set.
-- **Supabase/PostgreSQL (optional)** — simple hosted database for live character-view statistics.
-- **OpenAI-compatible API (optional)** — powers role-play conversations while keeping secrets server-side.
-- **Vercel** — first-class Next.js deployment and server function support.
+- **Next.js 15 + App Router** — frontend and backend in one deployable application; Route Handlers create a clean server-only integration boundary.
+- **React + TypeScript** — typed models and reusable UI components reduce errors when dealing with third-party API data.
+- **Plain CSS design system** — keeps the project lightweight while allowing a custom Hogwarts-inspired visual identity.
+- **Lucide React** — lightweight, consistent iconography.
+- **Supabase / PostgreSQL** — stores aggregate character-view statistics.
+- **Google Gemini 3.6 Flash** — powers role-play conversations while the API key remains server-side.
+- **Vercel** — production hosting with first-class support for Next.js server functions.
 
 ## Why this stack
 
-The challenge specifically requires server-side access to third-party services. A split SPA + separate backend would work, but it adds repository, deployment and CORS complexity for little contest value. Next.js keeps presentation and API boundaries in one TypeScript codebase while still providing a real server integration layer.
+The challenge requires third-party services to be called from the server. A separate SPA plus separate backend would work, but it would add deployment, CORS and repository complexity without improving the core experience.
 
-The project intentionally avoids authentication. Favorites are device-local and the live database feature is aggregate-only, so login would add significant implementation and review complexity without improving the required experience.
+Next.js keeps the UI and backend boundary inside one TypeScript codebase while still providing a real server integration layer. Authentication was intentionally excluded because favorites are device-local and popularity data is aggregate-only; adding login/JWT/account-management flows would increase complexity without improving the requested experience.
 
 ## Getting started
 
-### 1. Clone the repository
+### 1. Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/harry-potter-explorer.git
-cd harry-potter-explorer
+git clone https://github.com/shokanm/harry-potter-explorer-ChatGPT.git
+cd harry-potter-explorer-ChatGPT
 ```
 
-### 2. Install dependencies
+### 2. Use Node.js 20+
+
+```bash
+nvm install 20
+nvm use 20
+```
+
+### 3. Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Configure environment variables
+### 4. Configure environment variables
 
 ```bash
 cp .env.example .env.local
 ```
 
-The core application works without any secret variables. HP API access does not require a key.
+The core explorer works without secrets. Supabase analytics and Gemini chat are optional enhancements.
 
-### 4. Run locally
+### 5. Run locally
 
 ```bash
 npm run dev
@@ -104,7 +117,7 @@ npm run dev
 
 Open `http://localhost:3000`.
 
-### 5. Production check
+### 6. Production check
 
 ```bash
 npm run build
@@ -113,92 +126,143 @@ npm start
 
 ## Environment variables
 
+```env
+GEMINI_API_KEY=
+GEMINI_MODEL=gemini-3.6-flash
+
+SUPABASE_URL=
+SUPABASE_SECRET_KEY=
+```
+
 | Variable | Required | Purpose |
 |---|---:|---|
-| `OPENAI_API_KEY` | No | Enables live AI character chat |
-| `OPENAI_MODEL` | No | LLM model, defaults to `gpt-4o-mini` |
-| `SUPABASE_URL` | No | Supabase project URL for view statistics |
-| `SUPABASE_SERVICE_ROLE_KEY` | No | Server-only database credential |
+| `GEMINI_API_KEY` | No | Enables live AI character chat |
+| `GEMINI_MODEL` | No | Gemini model name; currently `gemini-3.6-flash` |
+| `SUPABASE_URL` | No | Supabase project URL |
+| `SUPABASE_SECRET_KEY` | No | Server-only Supabase credential |
 
-**Never expose `SUPABASE_SERVICE_ROLE_KEY` or `OPENAI_API_KEY` with a `NEXT_PUBLIC_` prefix.**
+**Never** expose `GEMINI_API_KEY` or `SUPABASE_SECRET_KEY` with a `NEXT_PUBLIC_` prefix, and never commit `.env.local`.
 
-## Database setup
+## Supabase setup
 
-1. Create a Supabase project.
-2. Run `supabase.sql` in the SQL editor.
-3. Add `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` to `.env.local` and your deployment secrets.
-4. Restart the application.
+Run `supabase.sql` in the Supabase SQL Editor, then set `SUPABASE_URL` and `SUPABASE_SECRET_KEY` locally and in Vercel.
 
-Character detail opens then increment the aggregate view counter through `/api/views`. The client never receives the service-role credential.
+Opening a character detail page sends `POST /api/views`. The server calls the PostgreSQL `increment_character_view` RPC, which uses an atomic `UPSERT` (`views = views + 1`) so concurrent profile opens do not lose increments.
+
+The home-page **Most Explored Wizards** component requests `GET /api/views` every 8 seconds. This gives reviewers near-real-time database feedback while preserving the rule that the browser never talks directly to Supabase.
+
+## AI character chat
+
+The AI chat uses Google Gemini through the server-side `/api/chat` route.
+
+Each request includes a character-specific system instruction and recent conversation history. This creates a more recognizable persona and allows the conversation to maintain context across messages.
+
+```text
+Browser
+  ↓ POST /api/chat
+Next.js Route Handler
+  ↓ server-side request
+Google Gemini API
+  ↓
+Next.js
+  ↓
+Browser
+```
+
+The Gemini API key is never sent to the client.
+
+## Magical artifacts
+
+The `/artifacts` page adds a curated lore collection for iconic magical objects such as the Elder Wand, Invisibility Cloak, Resurrection Stone, Marauder's Map, Time-Turner, Sorting Hat, Sword of Gryffindor and Philosopher's Stone.
+
+This data is intentionally local because the required Harry Potter API does not provide an artifacts endpoint. No unnecessary external service is introduced just to supply static lore content.
 
 ## Design and development process
 
-1. **Requirement mapping.** Each contest requirement was converted into a visible feature or explicit architecture constraint.
-2. **Server boundary first.** Third-party integrations were designed behind route handlers before UI data fetching was implemented.
-3. **Progressive enhancement.** Core HP exploration works with zero secrets. Database and AI features enhance the app rather than block it.
-4. **Reusable domain components.** Character cards, house cards, favorites helpers and typed domain models are shared across screens.
-5. **Failure-aware UX.** Third-party service failures result in readable UI states instead of blank pages or exposed stack traces.
-6. **Contest-focused scope.** Authentication and unrelated admin tooling were excluded so time could be invested in data flow, polish and AI functionality.
+1. **Requirement mapping** — every competition requirement was translated into either a visible feature or an explicit architecture constraint.
+2. **Server boundary first** — third-party integrations were placed behind Next.js Route Handlers before client data flows were built.
+3. **Progressive enhancement** — core exploration works without secrets; database analytics and AI chat enhance the app rather than block it.
+4. **Reusable domain components** — character cards, house cards, favorites helpers and typed models are shared between screens.
+5. **Failure-aware UX** — upstream failures produce readable fallback states rather than blank pages or exposed stack traces.
+6. **Contest-focused scope** — authentication and unrelated admin tooling were excluded so effort could go into architecture, data flow, AI and polish.
+7. **Production-first validation** — the project is built for production and deployed publicly instead of being demonstrated only locally.
 
 ## Unique approaches
 
 ### Server-side pagination over a non-paginated API
 
-The Harry Potter API returns the full character collection. Rather than sending the entire dataset to the browser, `/api/characters` fetches/caches the upstream data server-side, applies search and house filters, and returns only the requested page.
+The Harry Potter API returns the character collection without the pagination behavior required by the UI. `/api/characters` performs upstream fetching, search, house filtering and pagination on the server, returning only the requested page to the browser.
 
-### Optional integrations without broken demos
+### Server-only integration boundary
 
-A reviewer can clone and run the app without owning OpenAI or Supabase credentials. Missing optional integrations degrade gracefully and explain how to enable them.
+The frontend communicates only with this application's `/api/*` endpoints. Provider-specific logic and secret credentials stay outside the client bundle.
 
-### Privacy and secret containment
+### Atomic popularity counter
 
-All service credentials and external calls are kept server-side. The browser only communicates with this application's own `/api/*` routes.
+Character views are incremented using a PostgreSQL `UPSERT` RPC rather than a read-modify-write sequence. This avoids lost updates when multiple users open the same character concurrently.
+
+### Near-real-time popularity without exposing Supabase
+
+The leaderboard refreshes every 8 seconds by polling `/api/views`. Database changes become visible automatically, while Supabase remains fully hidden behind the server boundary.
 
 ### Local-first favorites
 
-Favorites are a personal, non-sensitive preference. `localStorage` is intentionally used instead of requiring user registration and a database write for a feature that does not need cross-device identity.
+Favorites are a small, non-sensitive preference, so `localStorage` is intentionally used instead of requiring registration and database writes.
+
+### Character-specific LLM role-play
+
+The chat is not a generic bot with a Harry Potter skin. The server builds character-specific system instructions and sends recent conversation history for stronger persona consistency.
 
 ## Trade-offs
 
-- **Next.js monolith vs separate backend:** Chosen for simpler deployment and a smaller review surface. A dedicated backend could scale independently but is unnecessary here.
-- **Server-side filtering/pagination:** The upstream HP API does not provide robust pagination, so the server fetches the collection and slices results. The response is cached to reduce upstream traffic, but this would not be ideal for a very large dataset.
-- **localStorage favorites:** Fast and zero-auth, but favorites do not sync across devices.
-- **Aggregate view counter:** The demo implementation is deliberately simple. Under very high concurrent traffic, a database RPC/atomic increment would be preferable to read-then-update.
-- **No authentication:** Keeps attention on the actual challenge and avoids unnecessary security/account flows.
-- **LLM role-play:** A concise system prompt creates a recognizable voice, but LLM output can still occasionally diverge from canon.
+- **Next.js monolith vs separate backend:** simpler deployment and review surface; a dedicated backend could scale independently but is unnecessary for this challenge.
+- **Server-side filtering/pagination:** appropriate for the HP API's current dataset, but fetching the whole upstream collection would not scale to millions of records.
+- **`localStorage` favorites:** simple and zero-auth, but favorites do not synchronize across devices.
+- **Aggregate popularity only:** avoids collecting unnecessary per-user analytics.
+- **8-second polling vs WebSockets:** preserves the server-only integration rule and is easy to review, at the cost of a small delay and periodic requests.
+- **No authentication:** keeps focus on challenge requirements instead of account-management flows.
+- **Non-streaming AI responses:** simpler implementation, but users wait for the complete model response before it appears.
+- **LLM role-play:** prompts improve consistency, but generated responses can occasionally diverge from canon.
 
 ## Known issues / limitations
 
-- Some HP API characters have no portrait, patronus, house, wand details or birth date; the UI displays sensible fallbacks.
-- The upstream API can be slow during cold starts on its hosting provider.
+- Some HP API characters have no portrait, patronus, house, wand information or birth date; the UI displays fallbacks.
+- The upstream HP API can occasionally respond slowly during cold starts.
 - Favorites are browser/device-specific.
-- AI chat requires a valid LLM API key and may incur provider costs.
-- Character popularity writes use a simple non-atomic increment; for production-scale traffic, replace this with a PostgreSQL function using `views = views + 1` atomically.
-- The project intentionally avoids official movie artwork and franchise branding assets beyond images supplied by the data API.
-
-## Deployment — Vercel
-
-1. Push this project to a **public GitHub repository**.
-2. In Vercel, choose **Add New → Project**.
-3. Import the GitHub repository.
-4. Add optional environment variables under **Project Settings → Environment Variables**.
-5. Deploy.
-6. Test these routes on the public deployment:
-   - `/`
-   - `/houses`
-   - `/characters`
-   - `/spells`
-   - `/favorites`
-   - `/chat`
-7. Put the production URL into the `Demo` section of this README.
+- AI responses can occasionally contain non-canon details or imperfect character voice.
+- Gemini chat depends on provider model availability and free-tier quota.
+- Popularity is near-real-time polling, not a WebSocket subscription.
+- Artifact descriptions are curated local content because the required HP API has no artifacts endpoint.
 
 ## Security notes
 
 - External integrations are server-side only.
 - Secrets are read only from server environment variables.
-- `.env*` is excluded from Git.
-- No secret is prefixed with `NEXT_PUBLIC_`.
-- API errors are normalized before reaching the client.
+- `.env*` secret files are excluded from Git.
+- No secret uses a `NEXT_PUBLIC_` prefix.
+- Supabase credentials never reach the browser.
+- Gemini requests are proxied through `/api/chat`.
+- Database writes use a restricted RPC instead of client-side table access.
+- API errors are normalized before reaching the UI.
+
+## Deployment — Vercel
+
+1. Push the project to a public GitHub repository.
+2. Import it into Vercel.
+3. Add optional environment variables under **Project Settings → Environment Variables**.
+4. Deploy or redeploy after changing environment variables.
+5. Verify:
+
+```text
+/
+/houses
+/characters
+/spells
+/artifacts
+/favorites
+/chat
+/api/views
+```
 
 ## Project structure
 
@@ -209,6 +273,7 @@ app/
     chat/
     spells/
     views/
+  artifacts/
   characters/
   chat/
   favorites/
@@ -224,9 +289,33 @@ README.md
 
 ## Future improvements
 
-- Atomic PostgreSQL RPC for view counters
-- Streaming AI responses
-- More characters/personas in AI Chat
-- URL-synced search/filter state
+- Streaming Gemini responses
+- More character-specific personas
+- URL-synchronized search/filter state
 - End-to-end tests with Playwright
-- Offline-friendly caching for favorites and recently viewed characters
+- Better caching/retry strategy for HP API failures
+- Optional WebSocket/Reatime bridge for instant leaderboard updates
+- Cross-device favorite synchronization if authentication is introduced
+
+## Submission checklist
+
+- [x] Public GitHub repository
+- [x] README with description, setup and run instructions
+- [x] Design/development process documented
+- [x] Unique approaches documented
+- [x] Trade-offs documented
+- [x] Known issues documented
+- [x] Technical stack choice explained
+- [x] Harry Potter API called server-side
+- [x] Character search and pagination
+- [x] Public production deployment
+- [x] Character details
+- [x] Local favorites
+- [x] Supabase/PostgreSQL integration
+- [x] Near-real-time popularity refresh
+- [x] LLM character chat
+- [x] Magical artifacts collection
+
+---
+
+Built as a focused full-stack submission for the **nFactorial AI Engineering challenge**.
