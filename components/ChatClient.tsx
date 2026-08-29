@@ -1,6 +1,130 @@
 "use client";
-import { FormEvent, useState } from "react";
+
+import { FormEvent, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-const people=["Harry Potter","Hermione Granger","Severus Snape","Albus Dumbledore"];
-type Msg={role:"user"|"assistant";content:string};
-export default function ChatClient(){const sp=useSearchParams();const initial=sp.get("character");const [character,setCharacter]=useState(people.includes(initial||"")?initial!:"Harry Potter");const [messages,setMessages]=useState<Msg[]>([{role:"assistant",content:`You have my attention. What would you like to ask?`}]);const [text,setText]=useState("");const [busy,setBusy]=useState(false);async function send(e:FormEvent){e.preventDefault();if(!text.trim()||busy)return;const user={role:"user" as const,content:text.trim()};setMessages(m=>[...m,user]);setText("");setBusy(true);try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({character,message:user.content,history:messages})});const d=await r.json();setMessages(m=>[...m,{role:"assistant",content:d.reply||d.error||"The connection faded."}])}catch{setMessages(m=>[...m,{role:"assistant",content:"The enchanted connection failed. Please try again."}])}finally{setBusy(false)}}return <div className="chat-wrap"><aside className="chat-sidebar">{people.map(p=><button key={p} className={`chat-person ${p===character?"active":""}`} onClick={()=>{setCharacter(p);setMessages([{role:"assistant",content:`You are now speaking with ${p}. Ask away.`}])}}>{p}</button>)}</aside><section className="chat-main"><div className="messages">{messages.map((m,i)=><div className={`msg ${m.role}`} key={i}>{m.content}</div>)}{busy&&<div className="msg assistant">Thinking…</div>}</div><form className="chat-form" onSubmit={send}><input className="search" placeholder={`Ask ${character.split(" ")[0]} something...`} value={text} onChange={e=>setText(e.target.value)}/><button className="btn btn-primary" disabled={busy}>Send</button></form></section></div>}
+
+const featuredPeople = [
+  "Harry Potter",
+  "Hermione Granger",
+  "Severus Snape",
+  "Albus Dumbledore",
+];
+
+type Msg = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export default function ChatClient() {
+  const searchParams = useSearchParams();
+  const requestedCharacter = searchParams.get("character")?.trim();
+  const initialCharacter = requestedCharacter || "Harry Potter";
+
+  const people = useMemo(
+    () =>
+      featuredPeople.includes(initialCharacter)
+        ? featuredPeople
+        : [initialCharacter, ...featuredPeople],
+    [initialCharacter]
+  );
+
+  const [character, setCharacter] = useState(initialCharacter);
+  const [messages, setMessages] = useState<Msg[]>([
+    {
+      role: "assistant",
+      content: `You are now speaking with ${initialCharacter}. What would you like to ask?`,
+    },
+  ]);
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function send(e: FormEvent) {
+    e.preventDefault();
+    if (!text.trim() || busy) return;
+
+    const user = { role: "user" as const, content: text.trim() };
+    setMessages((current) => [...current, user]);
+    setText("");
+    setBusy(true);
+
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          character,
+          message: user.content,
+          history: messages,
+        }),
+      });
+
+      const data = await response.json();
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: data.reply || data.error || "The connection faded.",
+        },
+      ]);
+    } catch {
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content: "The enchanted connection failed. Please try again.",
+        },
+      ]);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function selectCharacter(person: string) {
+    setCharacter(person);
+    setMessages([
+      {
+        role: "assistant",
+        content: `You are now speaking with ${person}. What would you like to ask?`,
+      },
+    ]);
+  }
+
+  return (
+    <div className="chat-wrap">
+      <aside className="chat-sidebar">
+        {people.map((person) => (
+          <button
+            key={person}
+            className={`chat-person ${person === character ? "active" : ""}`}
+            onClick={() => selectCharacter(person)}
+          >
+            {person}
+          </button>
+        ))}
+      </aside>
+
+      <section className="chat-main">
+        <div className="messages">
+          {messages.map((message, index) => (
+            <div className={`msg ${message.role}`} key={index}>
+              {message.content}
+            </div>
+          ))}
+          {busy && <div className="msg assistant">Thinking…</div>}
+        </div>
+
+        <form className="chat-form" onSubmit={send}>
+          <input
+            className="search"
+            placeholder={`Ask ${character.split(" ")[0]} something...`}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <button className="btn btn-primary" disabled={busy}>
+            Send
+          </button>
+        </form>
+      </section>
+    </div>
+  );
+}
