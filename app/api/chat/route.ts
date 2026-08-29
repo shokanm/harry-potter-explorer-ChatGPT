@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+    const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
 
     if (!apiKey) {
       return NextResponse.json({
@@ -76,7 +76,6 @@ RULES:
         parts: [{ text: item.content }],
       }));
 
-    // Avoid beginning Gemini conversation history with a model message.
     while (
       formattedHistory.length > 0 &&
       formattedHistory[0].role === "model"
@@ -113,7 +112,6 @@ RULES:
 
     if (!response.ok) {
       const errorText = await response.text();
-
       console.error("Gemini API error:", response.status, errorText);
 
       return NextResponse.json(
