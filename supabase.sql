@@ -9,5 +9,39 @@ create table if not exists public.character_views (
 create index if not exists character_views_views_idx
   on public.character_views (views desc);
 
--- The application uses the service-role key ONLY on the server.
--- No browser code talks directly to this table.
+alter table public.character_views enable row level security;
+
+create or replace function public.increment_character_view(
+  p_character_id text,
+  p_character_name text
+)
+returns void
+language sql
+security invoker
+as $$
+  insert into public.character_views as cv (
+    character_id,
+    character_name,
+    views,
+    updated_at
+  )
+  values (
+    p_character_id,
+    p_character_name,
+    1,
+    now()
+  )
+  on conflict (character_id)
+  do update set
+    character_name = excluded.character_name,
+    views = cv.views + 1,
+    updated_at = now();
+$$;
+
+revoke execute
+on function public.increment_character_view(text, text)
+from public, anon, authenticated;
+
+grant execute
+on function public.increment_character_view(text, text)
+to service_role;
